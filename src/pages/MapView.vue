@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, onBeforeUnmount } from 'vue'
 import L from 'leaflet'
 import dayjs from 'dayjs'
 import { useRoute, useRouter } from 'vue-router'
@@ -8,8 +8,9 @@ import { fetchParkingsAround } from '../lib/overpass'
 import { fetchTallinnZonesGeoJSON } from '../lib/tallinnZonesGeo'
 import { ZONE_RULES } from '../data/tallinnZones'
 import DurationPicker from '../components/DurationPicker.vue'
+import SearchBox from '../components/SearchBox.vue'
 import * as turf from '@turf/turf'
-import { estimateCost, zonePaidNow } from '../lib/tariff'  // kasutame sama arvutusloogikat
+import { estimateCost, zonePaidNow, minutesUntilFree } from '../lib/tariff'  // kasutame sama arvutusloogikat
 
 const route = useRoute()
 const router = useRouter()
@@ -23,13 +24,23 @@ const duration = ref(60)
 const zonesGeo = ref(null)     // GeoJSON
 const activeZoneKey = ref(null) // 'KESKLINN' | 'SÜDALINN' | 'VANALINN' | 'PIRITA' | null
 
+// Layer toggles
+const showZones = ref(true)
+const showLots = ref(true)
+const showCity = ref(true)
+
+let notifyTimer = null
+
 import { fetchTallinnParkingPoints } from '../lib/tallinnParkingPlaces'
 
 async function loadCityParkingPoints() {
   const fc = await fetchTallinnParkingPoints()
   cityPointsLayer.clearLayers()
   L.geoJSON(fc, {
-    pointToLayer: (feature, latlng) => L.circleMarker(latlng, { radius: 3 })
+    pointToLayer: (feature, latlng) => {
+      const color = getToken('--points-city') || '#22c55e'
+      return L.circleMarker(latlng, { radius: 3, color, fillColor: color, fillOpacity: 1 })
+    }
   }).addTo(cityPointsLayer)
 }
 
@@ -45,8 +56,12 @@ async function initMap() {
   lotsLayer = L.layerGroup().addTo(map)
 
   // Lae tsoonid
-  zonesGeo.value = await fetchTallinnZonesGeoJSON()
-  drawZones(zonesGeo.value)
+  try {
+    zonesGeo.value = await fetchTallinnZonesGeoJSON()
+    drawZones(zonesGeo.value)
+  } catch (e) {
+    window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Tsoonid ei laadinud' } }))
+  }
 
   // (SOOVIKORRAL) Lae Tallinna ametlikud parkimispunktid
   await loadCityParkingPoints()
@@ -70,14 +85,33 @@ async function initMap() {
       setPosition(fallback)
       await loadLots()
       resolveZoneForPoint(fallback)
+      window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Luba asukoht, et näha lähimaid kohti' } }))
     }
   }
+}
+
+function getZoneColor(key) {
+  if (key === 'VANALINN') return getComputedStyle(document.documentElement).getPropertyValue('--zones-vanalinn').trim() || '#ef4444'
+  if (key === 'SÜDALINN') return getComputedStyle(document.documentElement).getPropertyValue('--zones-sydalinn').trim() || '#f59e0b'
+  if (key === 'KESKLINN') return getComputedStyle(document.documentElement).getPropertyValue('--zones-kesklinn').trim() || '#3b82f6'
+  if (key === 'PIRITA') return getComputedStyle(document.documentElement).getPropertyValue('--zones-pirita').trim() || '#10b981'
+  return '#2563eb'
+}
+
+function getToken(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 }
 
 function drawZones(fc) {
   zonesLayer.clearLayers()
   L.geoJSON(fc, {
-    style: { color: '#2563eb', weight: 1, fillOpacity: 0.05 }
+    style: (feature) => {
+      const props = feature.properties || {}
+      const rawName = props.NIMI || props.NAME || props.TSOON || props.TSON || props.ZONE || ''
+      const key = normalizeZoneName(rawName)
+      const color = getZoneColor(key)
+      return { color, weight: 2, fillOpacity: 0.10, fillColor: color }
+    }
   }).addTo(zonesLayer)
 }
 
@@ -92,7 +126,8 @@ async function loadLots() {
   lots.value = await fetchParkingsAround(pos.value.lat, pos.value.lng, 800)
   lotsLayer.clearLayers()
   lots.value.forEach(p => {
-    L.circleMarker([p.lat, p.lng], { radius: 6 })
+    const color = getToken('--lots-osm') || '#2563eb'
+    L.circleMarker([p.lat, p.lng], { radius: 6, color, fillColor: color, fillOpacity: 1 })
         .addTo(lotsLayer)
         .bindPopup(p.name)
   })
@@ -128,6 +163,7 @@ function resolveZoneForPoint(latlng) {
 }
 
 onMounted(initMap)
+onBeforeUnmount(() => { if (notifyTimer) clearTimeout(notifyTimer) })
 
 const now = dayjs()
 const bestZone = computed(() => {
@@ -153,6 +189,65 @@ const bestZone = computed(() => {
   }
 })
 
+const freeHint = computed(() => {
+  if (!activeZoneKey.value) return null
+  const z = ZONE_RULES[activeZoneKey.value]
+  if (!z) return null
+  const paid = zonePaidNow(activeZoneKey.value, now)
+  if (!paid) return 'Praegu tasuta'
+  const m = minutesUntilFree(activeZoneKey.value, now)
+  if (m === null) return null // 24/7 paid
+  if (m === 0) return 'Varsti tasuta'
+  if (duration.value > m) return `Tasuline ~${m} min, siis tasuta`
+  return null
+})
+
+function recenter() {
+  getBrowserLocation().then(loc => {
+    setPosition(loc)
+    loadLots()
+    resolveZoneForPoint(loc)
+  }).catch(() => window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Asukoha lugemine ebaõnnestus' } })))
+}
+
+function onSearchSelect(item) {
+  const latlng = { lat: item.lat, lng: item.lng }
+  setPosition(latlng)
+  loadLots()
+  resolveZoneForPoint(latlng)
+}
+
+function toggleLayers() {
+  if (showZones.value) zonesLayer.addTo(map); else map.removeLayer(zonesLayer)
+  if (showLots.value) lotsLayer.addTo(map); else map.removeLayer(lotsLayer)
+  if (showCity.value) cityPointsLayer.addTo(map); else map.removeLayer(cityPointsLayer)
+}
+
+function notify() {
+  const mins = Math.max(0, duration.value - 10)
+  const ms = mins * 60 * 1000
+  if ('Notification' in window) {
+    Notification.requestPermission().then(p => {
+      if (p === 'granted') {
+        if (notifyTimer) clearTimeout(notifyTimer)
+        notifyTimer = setTimeout(() => {
+          new Notification('Parkinfo', { body: 'Parkimine lõppeb 10 minuti pärast' })
+        }, ms)
+        window.dispatchEvent(new CustomEvent('toast', { detail: { message: `Teavitus seatud (${mins} min)` } }))
+      }
+    })
+  } else {
+    window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Teavitused ei ole toetatud' } }))
+  }
+}
+
+function navigateToPoint() {
+  if (!pos.value) return
+  const { lat, lng } = pos.value
+  const url = `https://www.google.com/maps?q=${lat},${lng}`
+  window.open(url, '_blank')
+}
+
 function goDetail(lot) {
   router.push({ path: `/lot/${encodeURIComponent(lot.id)}`, query: { name: lot.name } })
 }
@@ -167,52 +262,86 @@ function goDetail(lot) {
     </div>
 
     <div style="flex:1;">
-      <div ref="mapDiv" style="height:100%;"></div>
-    </div>
-
-    <div class="page" style="padding-bottom:12px;">
-      <DurationPicker v-model="duration" />
-
-      <div class="card" v-if="bestZone">
-        <div class="row" style="justify-content:space-between;">
-          <div>
-            <strong>{{ bestZone.precise ? 'Tsoon' : 'Odavaim eelduslik tsoon' }}:</strong>
-            {{ bestZone.zone.key }}
-            <div v-if="!bestZone.precise" style="font-size:12px;color:#6b7280">
-              Eelduslik – kinnita märgistuse järgi
-            </div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-size:20px;font-weight:700">{{ bestZone.cost.toFixed(2) }} €</div>
-            <span class="badge" :class="bestZone.paidNow ? 'red' : 'green'">
-              {{ bestZone.paidNow ? 'Tasuline nüüd' : 'Praegu tasuta' }}
-            </span>
-          </div>
+      <div ref="mapDiv" style="height:100%; position:relative;"></div>
+      <div class="floating-controls">
+        <SearchBox @select="onSearchSelect" />
+        <div class="control-box" role="group" aria-label="Kaardikihid">
+          <label style="display:flex; align-items:center; gap:6px;">
+            <input type="checkbox" v-model="showZones" @change="toggleLayers" /> Tsoonid
+          </label>
+          <label style="display:flex; align-items:center; gap:6px;">
+            <input type="checkbox" v-model="showLots" @change="toggleLayers" /> OSM parklad
+          </label>
+          <label style="display:flex; align-items:center; gap:6px;">
+            <input type="checkbox" v-model="showCity" @change="toggleLayers" /> Linna punktid
+          </label>
         </div>
-        <div style="font-size:12px;color:#6b7280;margin-top:6px;">
-          * Tsoonireeglid: Tallinna ametlik info (24/7 Vanalinn/Südalinn; Kesklinn tööpäevadel/poollaupäeval; Pirita hooajaliselt; 15 min tasuta).
+        <button class="btn" aria-label="Keskendu minu asukohale" @click="recenter">Keskendu
+        </button>
+      </div>
+      <div class="floating-controls right">
+        <div class="control-box legend" aria-label="Legend">
+          <div class="legend-item"><span class="dot vanalinn"></span> Vanalinn</div>
+          <div class="legend-item"><span class="dot sydalinn"></span> Südalinn</div>
+          <div class="legend-item"><span class="dot kesklinn"></span> Kesklinn</div>
+          <div class="legend-item"><span class="dot pirita"></span> Pirita</div>
+          <div class="legend-item"><span class="dot osm"></span> OSM parklad</div>
+          <div class="legend-item"><span class="dot city"></span> Linna punktid</div>
         </div>
       </div>
+    </div>
 
-      <div>
-        <h3 style="margin:8px 0;">Lähimad parklad (OSM)</h3>
-        <div v-for="lot in lots" :key="lot.id" class="card" @click="goDetail(lot)" style="cursor:pointer;">
+    <div class="bottom-sheet" role="dialog" aria-label="Parkimise valikud">
+      <div class="handle" aria-hidden="true"></div>
+      <div class="content">
+        <DurationPicker v-model="duration" />
+
+        <div class="card" v-if="bestZone">
           <div class="row" style="justify-content:space-between;">
             <div>
-              <strong>{{ lot.name }}</strong>
-              <div style="font-size:12px;color:#6b7280;">
-                {{ lot.operator ? lot.operator + ' · ' : '' }}
-                {{ lot.capacity ? (lot.capacity + ' kohta') : 'mahutavus: ?' }}
+              <strong>{{ bestZone.precise ? 'Tsoon' : 'Odavaim eelduslik tsoon' }}:</strong>
+              {{ bestZone.zone.key }}
+              <div v-if="!bestZone.precise" style="font-size:12px;color:#6b7280">
+                Eelduslik – kinnita märgistuse järgi
               </div>
+              <div v-if="freeHint" style="font-size:12px;color:#6b7280; margin-top:4px;">{{ freeHint }}</div>
             </div>
-            <div>
-              <span class="badge" :class="lot.feeTag === 'no' ? 'green' : (lot.feeTag === 'yes' ? 'red' : 'gray')">
-                {{ lot.feeTag === 'no' ? 'Tasuta' : (lot.feeTag === 'yes' ? 'Tasuline' : 'Tundmatu') }}
+            <div style="text-align:right;">
+              <div style="font-size:20px;font-weight:700">{{ bestZone.cost.toFixed(2) }} €</div>
+              <span class="badge" :class="bestZone.paidNow ? 'red' : 'green'">
+                {{ bestZone.paidNow ? 'Tasuline nüüd' : 'Praegu tasuta' }}
               </span>
             </div>
           </div>
+          <div class="row" style="margin-top:8px;">
+            <button class="btn" aria-label="Sea teavitus" @click="notify">Teavita</button>
+            <button class="btn outline" aria-label="Navigeeri sihtkohta" @click="navigateToPoint">Navigeeri</button>
+          </div>
+          <div style="font-size:12px;color:#6b7280;margin-top:6px;">
+            * Tsoonireeglid: 15 min tasuta; Kesklinn tööpäeviti/laupäeval; Pirita hooajaliselt.
+          </div>
         </div>
-        <p style="font-size:12px;color:#6b7280;">Eraoperaatorite hinnad võivad erineda – kontrolli kohapeal.</p>
+
+        <div>
+          <h3 style="margin:8px 0;">Lähimad parklad (OSM)</h3>
+          <div v-for="lot in lots" :key="lot.id" class="card" @click="goDetail(lot)" style="cursor:pointer;">
+            <div class="row" style="justify-content:space-between;">
+              <div>
+                <strong>{{ lot.name }}</strong>
+                <div style="font-size:12px;color:#6b7280;">
+                  {{ lot.operator ? lot.operator + ' · ' : '' }}
+                  {{ lot.capacity ? (lot.capacity + ' kohta') : 'mahutavus: ?' }}
+                </div>
+              </div>
+              <div>
+                <span class="badge" :class="lot.feeTag === 'no' ? 'green' : (lot.feeTag === 'yes' ? 'red' : 'gray')">
+                  {{ lot.feeTag === 'no' ? 'Tasuta' : (lot.feeTag === 'yes' ? 'Tasuline' : 'Tundmatu') }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:#6b7280;">Eraoperaatorite hinnad võivad erineda – kontrolli kohapeal.</p>
+        </div>
       </div>
     </div>
   </div>
