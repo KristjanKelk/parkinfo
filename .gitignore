@@ -22,3 +22,19 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Node / pnpm
+node_modules/
+.pnpm-debug.log*
+
+# Build output
+dist/
+dist-ssr/
+
+# Local env files
+.env.local
+.env.*.local
+
+# IDE / editor
+.vscode/
+.idea/
