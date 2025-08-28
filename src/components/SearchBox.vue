@@ -1,11 +1,13 @@
 <script setup>
 import { ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const emit = defineEmits(['select'])
 const query = ref('')
 const loading = ref(false)
 const results = ref([])
 const showList = ref(false)
+const { t, locale } = useI18n()
 
 async function search(q) {
   if (!q || q.length < 3) {
@@ -15,7 +17,7 @@ async function search(q) {
   loading.value = true
   try {
     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5&addressdetails=0&countrycodes=ee`
-    const res = await fetch(url, { headers: { 'Accept-Language': 'et' } })
+    const res = await fetch(url, { headers: { 'Accept-Language': locale.value } })
     const json = await res.json()
     results.value = json.map(r => ({
       lat: parseFloat(r.lat),
@@ -23,7 +25,7 @@ async function search(q) {
       display: r.display_name
     }))
   } catch (e) {
-    window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Otsing ebaõnnestus' } }))
+    window.dispatchEvent(new CustomEvent('toast', { detail: { message: t('search.error') } }))
   } finally {
     loading.value = false
   }
@@ -60,7 +62,7 @@ function selectItem(item) {
 
 <template>
   <div class="control-box" style="position:relative;">
-    <input class="search-input" :aria-label="'Otsi aadressi'" v-model="query" @keydown="onKeydown" placeholder="Otsi aadressi..." />
+    <input class="search-input" :aria-label="t('search.label')" v-model="query" @keydown="onKeydown" :placeholder="t('search.placeholder')" />
     <div v-if="loading" style="position:absolute; right:14px; top:12px; font-size:12px; color:#6b7280;">…</div>
     <div v-if="showList && results.length" style="position:absolute; top:46px; left:0; right:0; background:#fff; border:1px solid #e5e7eb; border-radius:10px; max-height:240px; overflow:auto; z-index:1001;">
       <div v-for="r in results" :key="r.display" @click="selectItem(r)" style="padding:8px 10px; cursor:pointer;">

@@ -3,6 +3,7 @@ import { onMounted, ref, computed, onBeforeUnmount } from 'vue'
 import L from 'leaflet'
 import dayjs from 'dayjs'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { getBrowserLocation } from '../lib/geo'
 import { fetchParkingsAround } from '../lib/overpass'
 import { fetchTallinnZonesGeoJSON } from '../lib/tallinnZonesGeo'
@@ -14,6 +15,7 @@ import { estimateCost, zonePaidNow, minutesUntilFree } from '../lib/tariff'  // 
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 const mapDiv = ref(null)
 let map, marker, zonesLayer, cityPointsLayer, lotsLayer
 
@@ -60,7 +62,7 @@ async function initMap() {
     zonesGeo.value = await fetchTallinnZonesGeoJSON()
     drawZones(zonesGeo.value)
   } catch (e) {
-    window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Tsoonid ei laadinud' } }))
+    window.dispatchEvent(new CustomEvent('toast', { detail: { message: t('map.toast.zonesFail') } }))
   }
 
   // (SOOVIKORRAL) Lae Tallinna ametlikud parkimispunktid
@@ -85,7 +87,7 @@ async function initMap() {
       setPosition(fallback)
       await loadLots()
       resolveZoneForPoint(fallback)
-      window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Luba asukoht, et näha lähimaid kohti' } }))
+      window.dispatchEvent(new CustomEvent('toast', { detail: { message: t('map.toast.enableLocation') } }))
     }
   }
 }
@@ -119,7 +121,7 @@ function setPosition(latlng) {
   pos.value = latlng
   map.setView(latlng, 16)
   if (marker) marker.remove()
-  marker = L.marker(latlng).addTo(map).bindPopup('Sinu sihtkoht').openPopup()
+  marker = L.marker(latlng).addTo(map).bindPopup(t('map.marker.destination')).openPopup()
 }
 
 async function loadLots() {
@@ -207,7 +209,7 @@ function recenter() {
     setPosition(loc)
     loadLots()
     resolveZoneForPoint(loc)
-  }).catch(() => window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Asukoha lugemine ebaõnnestus' } })))
+  }).catch(() => window.dispatchEvent(new CustomEvent('toast', { detail: { message: t('map.toast.locationReadFailed') } })))
 }
 
 function onSearchSelect(item) {
@@ -231,13 +233,13 @@ function notify() {
       if (p === 'granted') {
         if (notifyTimer) clearTimeout(notifyTimer)
         notifyTimer = setTimeout(() => {
-          new Notification('Parkinfo', { body: 'Parkimine lõppeb 10 minuti pärast' })
+          new Notification(t('app.title'), { body: t('map.toast.notifySet', { minutes: 10 }) })
         }, ms)
-        window.dispatchEvent(new CustomEvent('toast', { detail: { message: `Teavitus seatud (${mins} min)` } }))
+        window.dispatchEvent(new CustomEvent('toast', { detail: { message: t('map.toast.notifySet', { minutes: mins }) } }))
       }
     })
   } else {
-    window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Teavitused ei ole toetatud' } }))
+    window.dispatchEvent(new CustomEvent('toast', { detail: { message: t('map.toast.notSupported') } }))
   }
 }
 
@@ -256,8 +258,8 @@ function goDetail(lot) {
 <template>
   <div style="height: 100vh; display:flex; flex-direction:column;">
     <div class="header" style="padding:8px 12px;">
-      <button class="btn outline" @click="$router.push('/')">← Tagasi</button>
-      <h2 style="margin:0;">Kaart</h2>
+      <button class="btn outline" @click="$router.push('/')">{{ t('map.back') }}</button>
+      <h2 style="margin:0;">{{ t('map.title') }}</h2>
       <div style="width:64px;"></div>
     </div>
 
@@ -265,33 +267,33 @@ function goDetail(lot) {
       <div ref="mapDiv" style="height:100%; position:relative;"></div>
       <div class="floating-controls">
         <SearchBox @select="onSearchSelect" />
-        <div class="control-box" role="group" aria-label="Kaardikihid">
+        <div class="control-box" role="group" :aria-label="t('map.layers.aria')">
           <label style="display:flex; align-items:center; gap:6px;">
-            <input type="checkbox" v-model="showZones" @change="toggleLayers" /> Tsoonid
+            <input type="checkbox" v-model="showZones" @change="toggleLayers" /> {{ t('map.layers.zones') }}
           </label>
           <label style="display:flex; align-items:center; gap:6px;">
-            <input type="checkbox" v-model="showLots" @change="toggleLayers" /> OSM parklad
+            <input type="checkbox" v-model="showLots" @change="toggleLayers" /> {{ t('map.layers.osmLots') }}
           </label>
           <label style="display:flex; align-items:center; gap:6px;">
-            <input type="checkbox" v-model="showCity" @change="toggleLayers" /> Linna punktid
+            <input type="checkbox" v-model="showCity" @change="toggleLayers" /> {{ t('map.layers.city') }}
           </label>
         </div>
-        <button class="btn" aria-label="Keskendu minu asukohale" @click="recenter">Keskendu
+        <button class="btn" :aria-label="t('map.recenter.aria')" @click="recenter">{{ t('map.recenter') }}
         </button>
       </div>
       <div class="floating-controls right">
-        <div class="control-box legend" aria-label="Legend">
-          <div class="legend-item"><span class="dot vanalinn"></span> Vanalinn</div>
-          <div class="legend-item"><span class="dot sydalinn"></span> Südalinn</div>
-          <div class="legend-item"><span class="dot kesklinn"></span> Kesklinn</div>
-          <div class="legend-item"><span class="dot pirita"></span> Pirita</div>
-          <div class="legend-item"><span class="dot osm"></span> OSM parklad</div>
-          <div class="legend-item"><span class="dot city"></span> Linna punktid</div>
+        <div class="control-box legend" :aria-label="t('map.legend.title')">
+          <div class="legend-item"><span class="dot vanalinn"></span> {{ t('map.legend.oldtown') }}</div>
+          <div class="legend-item"><span class="dot sydalinn"></span> {{ t('map.legend.citycenter') }}</div>
+          <div class="legend-item"><span class="dot kesklinn"></span> {{ t('map.legend.central') }}</div>
+          <div class="legend-item"><span class="dot pirita"></span> {{ t('map.legend.pirita') }}</div>
+          <div class="legend-item"><span class="dot osm"></span> {{ t('map.legend.osm') }}</div>
+          <div class="legend-item"><span class="dot city"></span> {{ t('map.legend.city') }}</div>
         </div>
       </div>
     </div>
 
-    <div class="bottom-sheet" role="dialog" aria-label="Parkimise valikud">
+    <div class="bottom-sheet" role="dialog" :aria-label="t('map.sheet.aria')">
       <div class="handle" aria-hidden="true"></div>
       <div class="content">
         <DurationPicker v-model="duration" />
@@ -299,48 +301,48 @@ function goDetail(lot) {
         <div class="card" v-if="bestZone">
           <div class="row" style="justify-content:space-between;">
             <div>
-              <strong>{{ bestZone.precise ? 'Tsoon' : 'Odavaim eelduslik tsoon' }}:</strong>
+              <strong>{{ bestZone.precise ? t('map.zone.preciseLabel') : t('map.zone.estimateLabel') }}:</strong>
               {{ bestZone.zone.key }}
               <div v-if="!bestZone.precise" style="font-size:12px;color:#6b7280">
-                Eelduslik – kinnita märgistuse järgi
+                {{ t('map.zone.estimateNote') }}
               </div>
               <div v-if="freeHint" style="font-size:12px;color:#6b7280; margin-top:4px;">{{ freeHint }}</div>
             </div>
             <div style="text-align:right;">
               <div style="font-size:20px;font-weight:700">{{ bestZone.cost.toFixed(2) }} €</div>
               <span class="badge" :class="bestZone.paidNow ? 'red' : 'green'">
-                {{ bestZone.paidNow ? 'Tasuline nüüd' : 'Praegu tasuta' }}
+                {{ bestZone.paidNow ? t('map.paid.now') : t('map.free.now') }}
               </span>
             </div>
           </div>
           <div class="row" style="margin-top:8px;">
-            <button class="btn" aria-label="Sea teavitus" @click="notify">Teavita</button>
-            <button class="btn outline" aria-label="Navigeeri sihtkohta" @click="navigateToPoint">Navigeeri</button>
+            <button class="btn" :aria-label="t('map.notify')" @click="notify">{{ t('map.notify') }}</button>
+            <button class="btn outline" :aria-label="t('map.navigate')" @click="navigateToPoint">{{ t('map.navigate') }}</button>
           </div>
           <div style="font-size:12px;color:#6b7280;margin-top:6px;">
-            * Tsoonireeglid: 15 min tasuta; Kesklinn tööpäeviti/laupäeval; Pirita hooajaliselt.
+            {{ t('map.rules.note') }}
           </div>
         </div>
 
         <div>
-          <h3 style="margin:8px 0;">Lähimad parklad (OSM)</h3>
+          <h3 style="margin:8px 0;">{{ t('map.nearby.title') }}</h3>
           <div v-for="lot in lots" :key="lot.id" class="card" @click="goDetail(lot)" style="cursor:pointer;">
             <div class="row" style="justify-content:space-between;">
               <div>
                 <strong>{{ lot.name }}</strong>
                 <div style="font-size:12px;color:#6b7280;">
                   {{ lot.operator ? lot.operator + ' · ' : '' }}
-                  {{ lot.capacity ? (lot.capacity + ' kohta') : 'mahutavus: ?' }}
+                  {{ lot.capacity ? t('map.lot.capacityKnown', { count: lot.capacity }) : t('map.lot.capacityUnknown') }}
                 </div>
               </div>
               <div>
                 <span class="badge" :class="lot.feeTag === 'no' ? 'green' : (lot.feeTag === 'yes' ? 'red' : 'gray')">
-                  {{ lot.feeTag === 'no' ? 'Tasuta' : (lot.feeTag === 'yes' ? 'Tasuline' : 'Tundmatu') }}
+                  {{ lot.feeTag === 'no' ? t('map.lot.fee.free') : (lot.feeTag === 'yes' ? t('map.lot.fee.paid') : t('map.lot.fee.unknown')) }}
                 </span>
               </div>
             </div>
           </div>
-          <p style="font-size:12px;color:#6b7280;">Eraoperaatorite hinnad võivad erineda – kontrolli kohapeal.</p>
+          <p style="font-size:12px;color:#6b7280;">{{ t('lot.pricesDisclaimer') }}</p>
         </div>
       </div>
     </div>
