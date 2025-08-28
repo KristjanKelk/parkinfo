@@ -72,5 +72,29 @@
   "duration.label": "How long to park?",
   "duration.valuePrefix": "Duration:",
   "duration.h": "h",
-  "duration.min": "min"
+  "duration.min": "min",
+  "footer.links.privacy": "Privacy",
+  "footer.links.terms": "Terms",
+  "footer.links.imprint": "Imprint",
+  "footer.links.accessibility": "Accessibility",
+
+  "legal.privacy.title": "Privacy Policy",
+  "legal.privacy.updated": "Last updated: {date}",
+  "legal.privacy.intro": "We process only the minimum data necessary to provide the service.",
+  "legal.privacy.data.weCollect": "What we collect",
+  "legal.privacy.data.location": "Your location (if you allow it) is used only in your browser to find nearby parking and is not stored on our servers.",
+  "legal.privacy.data.analytics": "We currently do not use third‑party analytics. If added later, we will update this page and request consent where required.",
+  "legal.privacy.rights": "Your rights",
+  "legal.privacy.rights.text": "You can disable location access at any time from your browser settings.",
+
+  "legal.terms.title": "Terms of Service",
+  "legal.terms.intro": "This service is provided on an \"as is\" basis without warranties. Prices and rules may change; always confirm on-site signage.",
+  "legal.terms.use": "Acceptable use",
+  "legal.terms.use.text": "Do not misuse the service or attempt to disrupt it.",
+
+  "legal.imprint.title": "Imprint",
+  "legal.imprint.owner": "Owner",
+  "legal.imprint.contact": "Contact",
+  "legal.imprint.email": "Email",
+  "legal.imprint.disclaimer": "Content is provided with best effort; no guarantee of completeness or accuracy."
 }

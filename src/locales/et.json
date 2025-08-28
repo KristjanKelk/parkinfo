@@ -72,5 +72,29 @@
   "duration.label": "Kui kaua parkida?",
   "duration.valuePrefix": "Kestus:",
   "duration.h": "h",
-  "duration.min": "min"
+  "duration.min": "min",
+  "footer.links.privacy": "Privaatsus",
+  "footer.links.terms": "Tingimused",
+  "footer.links.imprint": "Imprint",
+  "footer.links.accessibility": "Juurdepääsetavus",
+
+  "legal.privacy.title": "Privaatsustingimused",
+  "legal.privacy.updated": "Viimati uuendatud: {date}",
+  "legal.privacy.intro": "Töötleme vaid teenuse osutamiseks vajalikku miinimumandmestikku.",
+  "legal.privacy.data.weCollect": "Mida kogume",
+  "legal.privacy.data.location": "Sinu asukohta (kui lubad) kasutatakse ainult sinu brauseris lähimate parklate leidmiseks; me ei talleta seda oma serverites.",
+  "legal.privacy.data.analytics": "Hetkel me ei kasuta kolmanda osapoole analüütikat. Kui lisame selle hiljem, uuendame seda lehte ja küsime nõusolekut vastavalt vajadusele.",
+  "legal.privacy.rights": "Sinu õigused",
+  "legal.privacy.rights.text": "Saad igal ajal keelata asukoha kasutamise oma brauseri seadetes.",
+
+  "legal.terms.title": "Kasutustingimused",
+  "legal.terms.intro": "Teenust pakutakse põhimõttel \"nagu on\" ilma garantiideta. Hinnad ja reeglid võivad muutuda; kinnita alati kohapealse märgistuse järgi.",
+  "legal.terms.use": "Lubatud kasutus",
+  "legal.terms.use.text": "Ära kuritarvita teenust ega püüa seda häirida.",
+
+  "legal.imprint.title": "Imprint",
+  "legal.imprint.owner": "Omanik",
+  "legal.imprint.contact": "Kontakt",
+  "legal.imprint.email": "E-post",
+  "legal.imprint.disclaimer": "Sisu on esitatud parima teadmisega; täielikkust ega õigsust ei garanteerita."
 }
