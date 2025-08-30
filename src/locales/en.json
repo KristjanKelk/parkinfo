@@ -39,6 +39,7 @@
   "map.sheet.aria": "Parking options",
   "map.zone.preciseLabel": "Zone",
   "map.zone.estimateLabel": "Cheapest expected zone",
+  "map.zone.info": "Zone and price",
   "map.zone.estimateNote": "Expected – confirm from signage",
   "map.free.now": "Free now",
   "map.free.soon": "Free soon",
