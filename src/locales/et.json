@@ -39,6 +39,7 @@
   "map.sheet.aria": "Parkimise valikud",
   "map.zone.preciseLabel": "Tsoon",
   "map.zone.estimateLabel": "Odavaim eelduslik tsoon",
+  "map.zone.info": "Tsoon ja hind",
   "map.zone.estimateNote": "Eelduslik – kinnita märgistuse järgi",
   "map.free.now": "Praegu tasuta",
   "map.free.soon": "Varsti tasuta",

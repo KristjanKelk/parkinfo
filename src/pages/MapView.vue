@@ -25,6 +25,7 @@ const lots = ref([])
 const duration = ref(60)
 const zonesGeo = ref(null)     // GeoJSON
 const activeZoneKey = ref(null) // 'KESKLINN' | 'SÜDALINN' | 'VANALINN' | 'PIRITA' | null
+const sheetExpanded = ref(false)
 
 // Layer toggles
 const showZones = ref(true)
@@ -204,6 +205,15 @@ const freeHint = computed(() => {
   return null
 })
 
+const zoneDotClass = computed(() => {
+  if (!activeZoneKey.value) return ''
+  if (activeZoneKey.value === 'VANALINN') return 'vanalinn'
+  if (activeZoneKey.value === 'SÜDALINN') return 'sydalinn'
+  if (activeZoneKey.value === 'KESKLINN') return 'kesklinn'
+  if (activeZoneKey.value === 'PIRITA') return 'pirita'
+  return ''
+})
+
 function recenter() {
   getBrowserLocation().then(loc => {
     setPosition(loc)
@@ -253,11 +263,15 @@ function navigateToPoint() {
 function goDetail(lot) {
   router.push({ path: `/lot/${encodeURIComponent(lot.id)}`, query: { name: lot.name } })
 }
+
+function toggleSheet() {
+  sheetExpanded.value = !sheetExpanded.value
+}
 </script>
 
 <template>
   <div style="height: 100vh; display:flex; flex-direction:column;">
-    <div class="header" style="padding:8px 12px;">
+    <div class="header map-header" style="padding:8px 12px;">
       <button class="btn outline" @click="$router.push('/')">{{ t('map.back') }}</button>
       <h2 style="margin:0;">{{ t('map.title') }}</h2>
       <div style="width:64px;"></div>
@@ -267,6 +281,12 @@ function goDetail(lot) {
       <div ref="mapDiv" style="height:100%; position:relative;"></div>
       <div class="floating-controls">
         <SearchBox @select="onSearchSelect" />
+        <div v-if="bestZone" class="chip" role="button" :aria-label="t('map.zone.info')" @click="toggleSheet">
+          <span class="dot" :class="zoneDotClass"></span>
+          <span>{{ bestZone.zone.key }}</span>
+          <span style="opacity:.6;">·</span>
+          <span>{{ bestZone.cost.toFixed(2) }} €</span>
+        </div>
         <div class="control-box" role="group" :aria-label="t('map.layers.aria')">
           <label style="display:flex; align-items:center; gap:6px;">
             <input type="checkbox" v-model="showZones" @change="toggleLayers" /> {{ t('map.layers.zones') }}
@@ -293,8 +313,8 @@ function goDetail(lot) {
       </div>
     </div>
 
-    <div class="bottom-sheet" role="dialog" :aria-label="t('map.sheet.aria')">
-      <div class="handle" aria-hidden="true"></div>
+    <div class="bottom-sheet" role="dialog" :aria-label="t('map.sheet.aria')" :class="{ expanded: sheetExpanded }" :aria-expanded="sheetExpanded ? 'true' : 'false'">
+      <div class="handle" aria-hidden="true" @click="toggleSheet"></div>
       <div class="content">
         <DurationPicker v-model="duration" />
 
