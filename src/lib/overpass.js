@@ -24,6 +24,7 @@ export async function fetchParkingsAround(lat, lng, radius = 800) {
         name: e.tags?.name || 'Parkla',
         operator: e.tags?.operator,
         feeTag: e.tags?.fee,        // 'yes' | 'no' | undefined
+        charge: e.tags?.charge,
         capacity: e.tags?.capacity,
         rawTags: e.tags || {}
     }))
@@ -70,6 +71,7 @@ export async function fetchParkingById(osmId) {
         access: tags.access,
         surface: tags.surface,
         operatorType: tags['operator:type'],
+        charge: tags.charge,
         payment: Object.keys(tags)
             .filter(k => k.startsWith('payment:') && tags[k] === 'yes')
             .map(k => k.replace('payment:', '')),

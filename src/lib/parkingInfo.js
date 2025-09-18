@@ -9,6 +9,7 @@ export function buildParkingInfo(parking) {
     const openingHours = parking.openingHours || tags.opening_hours
     const capacity = parking.capacity || tags.capacity
     const fee = parking.feeTag || tags.fee
+    const charge = parking.charge || tags.charge
     const payment = parking.payment || Object.keys(tags)
         .filter(k => k.startsWith('payment:') && tags[k] === 'yes')
         .map(k => k.replace('payment:', ''))
@@ -17,6 +18,7 @@ export function buildParkingInfo(parking) {
     if (operator) lines.push({ label: 'Operator', value: operator })
     if (capacity) lines.push({ label: 'Capacity', value: String(capacity) })
     if (fee) lines.push({ label: 'Fee', value: fee })
+    if (charge) lines.push({ label: 'Charge', value: charge })
     if (openingHours) lines.push({ label: 'Opening hours', value: openingHours })
     if (phone) lines.push({ label: 'Phone', value: phone, href: phone ? `tel:${phone}` : undefined })
     if (email) lines.push({ label: 'Email', value: email, href: email ? `mailto:${email}` : undefined })

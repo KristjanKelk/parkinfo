@@ -54,6 +54,7 @@
   "map.lot.fee.free": "Free",
   "map.lot.fee.paid": "Paid",
   "map.lot.fee.unknown": "Unknown",
+  "map.lot.charge": "Tariff: {amount}",
   "map.toast.zonesFail": "Failed to load zones",
   "map.toast.enableLocation": "Allow location to see nearest places",
   "map.marker.destination": "Your destination",

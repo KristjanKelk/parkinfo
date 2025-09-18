@@ -54,6 +54,7 @@
   "map.lot.fee.free": "Tasuta",
   "map.lot.fee.paid": "Tasuline",
   "map.lot.fee.unknown": "Tundmatu",
+  "map.lot.charge": "Hind: {amount}",
   "map.toast.zonesFail": "Tsoonid ei laadinud",
   "map.toast.enableLocation": "Luba asukoht, et näha lähimaid kohti",
   "map.marker.destination": "Sinu sihtkoht",

@@ -346,11 +346,11 @@ function toggleSheet() {
 
         <div>
           <h3 style="margin:8px 0;">{{ t('map.nearby.title') }}</h3>
-          <div v-for="lot in lots" :key="lot.id" class="card" @click="goDetail(lot)" style="cursor:pointer;">
-            <div class="row" style="justify-content:space-between;">
-              <div>
+          <div v-for="lot in lots" :key="lot.id" class="card lot-card" @click="goDetail(lot)" role="button">
+            <div class="row lot-card__header">
+              <div class="lot-card__title">
                 <strong>{{ lot.name }}</strong>
-                <div style="font-size:12px;color:#6b7280;">
+                <div class="muted small">
                   {{ lot.operator ? lot.operator + ' · ' : '' }}
                   {{ lot.capacity ? t('map.lot.capacityKnown', { count: lot.capacity }) : t('map.lot.capacityUnknown') }}
                 </div>
@@ -361,8 +361,11 @@ function toggleSheet() {
                 </span>
               </div>
             </div>
+            <div v-if="lot.charge" class="lot-charge">
+              {{ t('map.lot.charge', { amount: lot.charge }) }}
+            </div>
           </div>
-          <p style="font-size:12px;color:#6b7280;">{{ t('lot.pricesDisclaimer') }}</p>
+          <p class="muted small">{{ t('lot.pricesDisclaimer') }}</p>
         </div>
       </div>
     </div>

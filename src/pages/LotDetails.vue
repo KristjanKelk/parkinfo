@@ -35,34 +35,36 @@ function navigate() {
 </script>
 
 <template>
-  <div class="page">
-    <div class="header">
+  <div class="page details-page">
+    <div class="header detail-header">
       <button class="btn outline" @click="router.back()">{{ t('common.back') }}</button>
-      <h2 style="margin:0;">{{ lot?.name || t('lot.defaultName') }}</h2>
-      <div style="width:64px;"></div>
+      <h2 class="detail-title">{{ lot?.name || t('lot.defaultName') }}</h2>
+      <div class="header-spacer" aria-hidden="true"></div>
     </div>
 
-    <div class="card">
+    <div class="card detail-card">
       <template v-if="loading">
         <p>{{ t('common.loading') }}</p>
       </template>
       <template v-else-if="error">
-        <p style="color:#b91c1c;">{{ error }}</p>
+        <p class="error-text">{{ error }}</p>
       </template>
       <template v-else>
-        <p>{{ t('lot.pricesDisclaimer') }}</p>
-        <ul style="padding-left:16px;">
-          <li v-for="line in info.lines" :key="line.label">
-            <strong>{{ line.label }}:</strong>
-            <template v-if="line.href">
-              <a :href="line.href" target="_blank" rel="noopener noreferrer">{{ line.value }}</a>
-            </template>
-            <template v-else>
-              {{ line.value }}
-            </template>
+        <p class="muted small">{{ t('lot.pricesDisclaimer') }}</p>
+        <ul class="info-list">
+          <li v-for="line in info.lines" :key="line.label" class="info-item">
+            <span class="info-label">{{ line.label }}</span>
+            <span class="info-value">
+              <template v-if="line.href">
+                <a :href="line.href" target="_blank" rel="noopener noreferrer">{{ line.value }}</a>
+              </template>
+              <template v-else>
+                {{ line.value }}
+              </template>
+            </span>
           </li>
         </ul>
-        <div class="row">
+        <div class="row action-row">
           <button class="btn" @click="navigate">{{ t('lot.openNavigation') }}</button>
           <a v-if="info.lines.find(l => l.label==='Website')" class="btn outline"
              :href="info.lines.find(l => l.label==='Website').href" target="_blank" rel="noopener noreferrer">
