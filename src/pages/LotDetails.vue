@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { fetchParkingById } from '../lib/overpass'
 import { buildParkingInfo } from '../lib/parkingInfo'
+import ParkingProviders from "../components/ParkingProviders.vue";
 
 const route = useRoute()
 const router = useRouter()
@@ -258,6 +259,13 @@ function openSMS(smsData) {
             <template v-if="paymentInfo.hasSMS">💬 {{ t('payment.sms.available') || 'SMS payment available' }}</template>
           </p>
         </div>
+      </div>
+
+      <div class="card services-card">
+        <h3 class="card-title">
+          {{ t('services.available') || (locale === 'et' ? 'Saadaolevad parkimisteenused' : 'Available Parking Services') }}
+        </h3>
+        <ParkingProviders />
       </div>
 
       <!-- Contact & Additional Info -->

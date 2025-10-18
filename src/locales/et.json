@@ -117,5 +117,32 @@
   "lot.email": "E-post",
   "lot.contact": "Kontakt ja info",
   "lot.maxheight": "Maksimaalne kõrgus",
-  "common.loading": "Laadimine..."
+  "common.loading": "Laadimine...",
+
+  "common.close": "Sulge",
+
+  "map.changeLocation": "Muuda Asukohta",
+  "map.editMode.hint": "👆 Klõpsa kaardil, et seada uus asukoht",
+  "map.editMode.done": "Valmis",
+  "map.toast.parkingDetailsFail": "Parkimiskoha andmete laadimine ebaõnnestus",
+
+  "parking.fee": "Tasu",
+  "parking.charge": "Hind",
+  "parking.hours": "Lahtiolekuajad",
+  "parking.maxHeight": "Maksimaalne kõrgus",
+  "parking.maxStay": "Maksimaalne seisundiaeg",
+  "parking.surface": "Pind",
+  "parking.viewDetails": "Vaata täielikke üksikasju",
+
+  "lot.operator": "Operaator",
+  "lot.capacity": "Mahutavus",
+  "lot.tariff": "Hind",
+  "lot.fee": "Tasu",
+  "lot.viewDetails": "Vaata täielikke üksikasju",
+
+  "services.title": "Parkimisteenused",
+  "services.allTitle": "Kõik parkimisteenused",
+  "services.available": "Saadaolevad parkimisteenused",
+  "services.downloadApp": "Laadi alla rakendus",
+  "services.visitWebsite": "Külasta veebilehte"
 }

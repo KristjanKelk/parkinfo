@@ -117,6 +117,32 @@
   "lot.email": "Email",
   "lot.contact": "Contact & Info",
   "lot.maxheight": "Max height",
-  "common.loading": "Loading..."
+  "common.loading": "Loading...",
 
+  "common.close": "Close",
+
+  "map.changeLocation": "Change Location",
+  "map.editMode.hint": "👆 Click on the map to set a new location",
+  "map.editMode.done": "Done",
+  "map.toast.parkingDetailsFail": "Failed to load parking details",
+
+  "parking.fee": "Fee",
+  "parking.charge": "Tariff",
+  "parking.hours": "Hours",
+  "parking.maxHeight": "Max Height",
+  "parking.maxStay": "Max Stay",
+  "parking.surface": "Surface",
+  "parking.viewDetails": "View Full Details",
+
+  "lot.operator": "Operator",
+  "lot.capacity": "Capacity",
+  "lot.tariff": "Tariff",
+  "lot.fee": "Fee",
+  "lot.viewDetails": "View Full Details",
+
+  "services.title": "Parking Services",
+  "services.allTitle": "All Parking Services",
+  "services.available": "Available Parking Services",
+  "services.downloadApp": "Download App",
+  "services.visitWebsite": "Visit Website"
 }

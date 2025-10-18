@@ -4,20 +4,68 @@ import { useI18n } from 'vue-i18n'
 import { setLocale } from './i18n'
 import ToastHost from './components/ToastHost.vue'
 
-const { locale, t } = useI18n()
+const { locale } = useI18n()
 watch(locale, (val) => setLocale(val))
+
+function toggleLocale() {
+  locale.value = locale.value === 'et' ? 'en' : 'et'
+}
 </script>
 
 <template>
   <div>
-    <div style="position:fixed; top:10px; right:10px; z-index:1200; background:#ffffffcc; backdrop-filter: blur(6px); border:1px solid #e5e7eb; border-radius:8px; padding:4px 8px; display:flex; gap:6px; align-items:center;">
-      <label for="lang-select" style="font-size:12px; color:#374151;">{{ t('app.language') }}</label>
-      <select id="lang-select" v-model="locale" style="font-size:12px; padding:4px 6px; border:1px solid #e5e7eb; border-radius:6px; background:#fff;">
-        <option value="et">{{ t('app.lang.et') }}</option>
-        <option value="en">{{ t('app.lang.en') }}</option>
-      </select>
-    </div>
+    <!-- Uber-style minimal language toggle -->
+    <button
+        class="lang-toggle"
+        @click="toggleLocale"
+        :aria-label="locale === 'et' ? 'Switch to English' : 'Lülitu eesti keelele'"
+    >
+      <span class="flag">{{ locale === 'et' ? '🇪🇪' : '🇬🇧' }}</span>
+      <span class="lang-text">{{ locale === 'et' ? 'ET' : 'EN' }}</span>
+    </button>
     <router-view />
   </div>
   <ToastHost />
 </template>
+
+<style>
+.lang-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lang-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.lang-toggle:active {
+  transform: translateY(0);
+}
+
+.flag {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.lang-text {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+</style>
