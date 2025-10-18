@@ -98,5 +98,24 @@
   "legal.imprint.owner": "Omanik",
   "legal.imprint.contact": "Kontakt",
   "legal.imprint.email": "E-post",
-  "legal.imprint.disclaimer": "Sisu on esitatud parima teadmisega; täielikkust ega õigsust ei garanteerita."
+  "legal.imprint.disclaimer": "Sisu on esitatud parima teadmisega; täielikkust ega õigsust ei garanteerita.",
+
+  "payment.methods": "Makseviisid",
+  "payment.sms": "SMS parkimine",
+  "payment.sms.number": "Saada numbrile",
+  "payment.sms.preview": "Sõnumi eelvaade",
+  "payment.sms.open": "Ava SMS rakendus",
+  "payment.sms.available": "SMS makse saadaval",
+  "payment.app": "Rakendus",
+  "payment.app.download": "Laadi alla",
+  "payment.app.get": "Hangi",
+  "payment.app.available": "Mobiilirakenduse makse saadaval",
+  "payment.plate": "Sinu numbrimärk",
+  "payment.plate.placeholder": "ABC123",
+  "lot.call": "Helista",
+  "lot.website": "Koduleht",
+  "lot.email": "E-post",
+  "lot.contact": "Kontakt ja info",
+  "lot.maxheight": "Maksimaalne kõrgus",
+  "common.loading": "Laadimine..."
 }

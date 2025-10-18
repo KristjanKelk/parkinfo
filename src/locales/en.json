@@ -98,5 +98,25 @@
   "legal.imprint.owner": "Owner",
   "legal.imprint.contact": "Contact",
   "legal.imprint.email": "Email",
-  "legal.imprint.disclaimer": "Content is provided with best effort; no guarantee of completeness or accuracy."
+  "legal.imprint.disclaimer": "Content is provided with best effort; no guarantee of completeness or accuracy.",
+
+  "payment.methods": "Payment Methods",
+  "payment.sms": "SMS Parking",
+  "payment.sms.number": "Send to",
+  "payment.sms.preview": "Message preview",
+  "payment.sms.open": "Open SMS App",
+  "payment.sms.available": "SMS payment available",
+  "payment.app": "App",
+  "payment.app.download": "Download on",
+  "payment.app.get": "Get it on",
+  "payment.app.available": "Mobile app payment available",
+  "payment.plate": "Your plate number",
+  "payment.plate.placeholder": "ABC123",
+  "lot.call": "Call",
+  "lot.website": "Website",
+  "lot.email": "Email",
+  "lot.contact": "Contact & Info",
+  "lot.maxheight": "Max height",
+  "common.loading": "Loading..."
+
 }
